@@ -2,15 +2,18 @@
 #include <stdio.h>
 #include <string.h>
 
-vector_int* make_vector() {
-    vector_int* v = malloc(sizeof(vector_int));
+void sort(int* v, int left, int right);
+void merge(int* v, int left, int right);
+
+VectorInt* VectorInt_make_vector() {
+    VectorInt* v = malloc(sizeof(VectorInt));
     v -> size = 0;
     v -> capacity = 1;
     v -> data = malloc(sizeof(int));
     return v;
 }
 
-void expand_capacity(vector_int* v) {
+void expand_capacity(VectorInt* v) {
     int *new_data = malloc(v -> capacity * 2 * sizeof(int));
     memcpy(new_data, v -> data, v -> capacity * sizeof(int));
     free(v -> data);
@@ -18,7 +21,7 @@ void expand_capacity(vector_int* v) {
     v -> capacity = v -> capacity * 2;
 }
 
-void push_back(vector_int* v, int a) {
+void VectorInt_push_back(VectorInt* v, int a) {
     if (v -> size < v -> capacity) {
         v -> data[v -> size] = a;
         v -> size++;
@@ -29,22 +32,22 @@ void push_back(vector_int* v, int a) {
     }
 }
 
-void sort(vector_int* v) {
-    __sort(v -> data, 0, v -> size);    
+void VectorInt_sort(VectorInt* v) {
+    sort(v -> data, 0, v -> size);    
 }
 
-void __sort(int* v, int left, int right) {
+void sort(int* v, int left, int right) {
     if (left + 1 >= right) {
         return;
     }
     int mid = (left + right) / 2;
-    __sort(v, left, mid);
-    __sort(v, mid, right);
-    __merge(v, left, right);
+    sort(v, left, mid);
+    sort(v, mid, right);
+    merge(v, left, right);
     
 }
 
-void __merge(int* v, int left, int right) {
+void merge(int* v, int left, int right) {
     int mid = (left + right) / 2;
     int i = 0, j = 0;
     int* result = malloc(sizeof(int) * (right - left));

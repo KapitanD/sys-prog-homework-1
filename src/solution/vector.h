@@ -1,16 +1,15 @@
-#ifndef MY_VECTOR_INT
-#define MY_VECTOR_INT
+#ifndef MY_VECTOR_INT_H
+#define MY_VECTOR_INT_H
 #include <stdlib.h>
 
-struct _vector_int {
+struct _VectorInt {
     size_t size, capacity;
     int* data;
 };
 
-#define vector_int struct _vector_int
+#define VectorInt struct _VectorInt
 
-vector_int* make_vector();
-void expand_capacity(vector_int* v);
-void push_back(vector_int* v, int a);
-void sort(vector_int* v);
+VectorInt* VectorInt_make_vector();
+void VectorInt_push_back(VectorInt* v, int a);
+void VectorInt_sort(VectorInt* v);
 #endif

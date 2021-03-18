@@ -2,11 +2,11 @@
 #include "vector.h"
 
 
-vector_int* read(FILE *input) {
+VectorInt* read(FILE *input) {
     int tmp = 0;
-    vector_int* v = make_vector();
+    VectorInt* v = VectorInt_make_vector();
     while(fscanf(input, "%d ", &tmp) != EOF) {
-        push_back(v, tmp);
+        VectorInt_push_back(v, tmp);
     }
     return v;
 }
@@ -31,7 +31,7 @@ int main(int argc, char** argv) {
         return 4;
     }
 
-    vector_int* v = read(input);
+    VectorInt* v = read(input);
 
     FILE* output = fopen(argv[1], "w+");
     if (output == NULL) {
@@ -39,7 +39,7 @@ int main(int argc, char** argv) {
         return 4;
     }
 
-    sort(v);
+    VectorInt_sort(v);
     for (int i = 0; i < v -> size; ++i) {
         fprintf(output, "%d ", v -> data[i]);
     }
