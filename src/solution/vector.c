@@ -30,5 +30,43 @@ void push_back(vector_int* v, int a) {
 }
 
 void sort(vector_int* v) {
+    __sort(v -> data, 0, v -> size);    
+}
+
+void __sort(int* v, int left, int right) {
+    if (left + 1 >= right) {
+        return;
+    }
+    int mid = (left + right) / 2;
+    __sort(v, left, mid);
+    __sort(v, mid, right);
+    __merge(v, left, right);
     
+}
+
+void __merge(int* v, int left, int right) {
+    int mid = (left + right) / 2;
+    int i = 0, j = 0;
+    int* result = malloc(sizeof(int) * (right - left));
+    while (left + i < mid && mid + j < right) {
+        if (v[left + i] < v[mid + j]){
+            result[i + j] = v[left + i];
+            i++;
+        } else {
+            result[i + j] = v[mid + j];
+            j++;
+        }
+    }
+    while (left + i < mid) {
+        result[i + j] = v[left + i];
+        i++;
+    }
+    while (mid + j < right) {
+        result[i + j] = v[mid + j];
+        j++;
+    }
+    for (int k = 0; k < i + j; k++) {
+        v[left + k] = result[k];
+    }
+    free(result);
 }

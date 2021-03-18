@@ -39,6 +39,7 @@ int main(int argc, char** argv) {
         return 4;
     }
 
+    sort(v);
     for (int i = 0; i < v -> size; ++i) {
         fprintf(output, "%d ", v -> data[i]);
     }
