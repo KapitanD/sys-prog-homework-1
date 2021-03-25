@@ -2,10 +2,10 @@
 #include <stdio.h>
 #include <string.h>
 
-void sort(int* v, int left, int right);
-void merge(int* v, int left, int right, int mid);
-VectorInt* merge_vectors(VectorInt** vs, int left, int right);
-VectorInt* append(VectorInt* fst, VectorInt* snd);
+static void sort(int* v, int left, int right);
+static void merge(int* v, int left, int right, int mid);
+static VectorInt* merge_vectors(VectorInt** vs, int left, int right);
+static VectorInt* append(VectorInt* fst, VectorInt* snd);
 
 VectorInt* VectorInt_make_vector() {
     VectorInt* v = malloc(sizeof(VectorInt));
@@ -15,7 +15,7 @@ VectorInt* VectorInt_make_vector() {
     return v;
 }
 
-void expand_capacity(VectorInt* v) {
+static void expand_capacity(VectorInt* v) {
     int *new_data = malloc(v -> capacity * 2 * sizeof(int));
     memcpy(new_data, v -> data, v -> capacity * sizeof(int));
     free(v -> data);
@@ -38,7 +38,7 @@ void VectorInt_sort(VectorInt* v) {
     sort(v -> data, 0, v -> size);    
 }
 
-void sort(int* v, int left, int right) {
+static void sort(int* v, int left, int right) {
     if (left + 1 >= right) {
         return;
     }
@@ -74,7 +74,7 @@ void merge(int* v, int left, int right, int mid) {
     free(result);
 }
 
-VectorInt* append(VectorInt* fst, VectorInt* snd) {
+static VectorInt* append(VectorInt* fst, VectorInt* snd) {
     int* new_data = malloc(sizeof(int) * (fst -> size + snd -> size));
     memcpy(new_data, fst -> data, fst -> size * sizeof(int));
     memcpy(new_data + fst -> size, snd -> data, snd -> size * sizeof(int));
@@ -84,7 +84,7 @@ VectorInt* append(VectorInt* fst, VectorInt* snd) {
     new_vector ->  data = new_data;
 }
 
-VectorInt* merge_vectors(VectorInt** vs, int left, int right) {
+static VectorInt* merge_vectors(VectorInt** vs, int left, int right) {
     if (left + 1 >= right) {
         return vs[left];
     }
@@ -93,6 +93,10 @@ VectorInt* merge_vectors(VectorInt** vs, int left, int right) {
     VectorInt* snd_vector = merge_vectors(vs, mid, right);
     VectorInt* result = append(fst_vector, snd_vector);
     merge(result -> data, 0, result -> size, fst_vector -> size);
+    free(fst_vector -> data);
+    free(fst_vector);
+    free(snd_vector -> data);
+    free(snd_vector);
     return result;
 }
 

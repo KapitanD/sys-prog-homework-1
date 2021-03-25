@@ -36,7 +36,7 @@ my_coroutine(int id)
 {
 	printf("func%d: started\n", id);
 	if (id == 1) {
-	        printf("coroutine1: swapcontext(&uctx_func1, &uctx_func2)\n");
+	    printf("coroutine1: swapcontext(&uctx_func1, &uctx_func2)\n");
 		if (swapcontext(&uctx_func1, &uctx_func2) == -1)
 	        	handle_error("swapcontext");
 	} else {
