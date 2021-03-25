@@ -3,7 +3,9 @@
 #include <string.h>
 
 void sort(int* v, int left, int right);
-void merge(int* v, int left, int right);
+void merge(int* v, int left, int right, int mid);
+VectorInt* merge_vectors(VectorInt** vs, int left, int right);
+VectorInt* append(VectorInt* fst, VectorInt* snd);
 
 VectorInt* VectorInt_make_vector() {
     VectorInt* v = malloc(sizeof(VectorInt));
@@ -43,12 +45,10 @@ void sort(int* v, int left, int right) {
     int mid = (left + right) / 2;
     sort(v, left, mid);
     sort(v, mid, right);
-    merge(v, left, right);
-    
+    merge(v, left, right, mid);
 }
 
-void merge(int* v, int left, int right) {
-    int mid = (left + right) / 2;
+void merge(int* v, int left, int right, int mid) {
     int i = 0, j = 0;
     int* result = malloc(sizeof(int) * (right - left));
     while (left + i < mid && mid + j < right) {
@@ -72,4 +72,30 @@ void merge(int* v, int left, int right) {
         v[left + k] = result[k];
     }
     free(result);
+}
+
+VectorInt* append(VectorInt* fst, VectorInt* snd) {
+    int* new_data = malloc(sizeof(int) * (fst -> size + snd -> size));
+    memcpy(new_data, fst -> data, fst -> size * sizeof(int));
+    memcpy(new_data + fst -> size, snd -> data, snd -> size * sizeof(int));
+    VectorInt* new_vector = malloc(sizeof(VectorInt));
+    new_vector -> size = fst -> size + snd -> size;
+    new_vector -> capacity = new_vector -> size;
+    new_vector ->  data = new_data;
+}
+
+VectorInt* merge_vectors(VectorInt** vs, int left, int right) {
+    if (left + 1 >= right) {
+        return vs[left];
+    }
+    int mid = (left + right) / 2;
+    VectorInt* fst_vector = merge_vectors(vs, left, mid);
+    VectorInt* snd_vector = merge_vectors(vs, mid, right);
+    VectorInt* result = append(fst_vector, snd_vector);
+    merge(result -> data, 0, result -> size, fst_vector -> size);
+    return result;
+}
+
+VectorInt* VectorInt_merge_vectors(VectorInt** vs, unsigned int size) {
+    return merge_vectors(vs, 0, size);
 }

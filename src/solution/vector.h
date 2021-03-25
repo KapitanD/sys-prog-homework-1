@@ -12,4 +12,5 @@ struct _VectorInt {
 VectorInt* VectorInt_make_vector();
 void VectorInt_push_back(VectorInt* v, int a);
 void VectorInt_sort(VectorInt* v);
+VectorInt* VectorInt_merge_vectors(VectorInt** vs, unsigned int size);
 #endif
