@@ -7,7 +7,7 @@ CFLAGS	+= -Wswitch-enum -Wunreachable-code -Winit-self
 CFLAGS	+= -Wno-unused-parameter -pedantic -O3
 LDFLAGS	= -g
 
-BASE_SOURCES    = src/main.c
+BASE_SOURCES    = src/main.c src/cmd_parser.c
 SOURCES		= $(BASE_SOURCES)
 OBJS		= $(SOURCES:.c=.o)
 EXECUTABLE	= bin/shell
