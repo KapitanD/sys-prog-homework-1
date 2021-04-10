@@ -189,6 +189,7 @@ cmd** read_command(FILE* input) {
         const char* token = tokens[i];
         if (strcmp(token, "|") == 0 || strcmp(token, ">>") == 0 || strcmp(token, ">") == 0) {
             cur_cmd -> argc = cmd_argc;
+            cur_cmd -> argv[cmd_argc] = NULL;
             cmd_argc = 0;
             cur_cmd -> name = cur_cmd -> argv[0];
             cmds = append_buffercmd(cur_cmd, cmds, &cmds_pos, &cmds_bufsize);
@@ -201,8 +202,9 @@ cmd** read_command(FILE* input) {
         }
         i++;
     }
-    cur_cmd -> argc = i;
+    cur_cmd -> argc = cmd_argc;
     cur_cmd -> name = cur_cmd -> argv[0];
+    cur_cmd -> argv[cmd_argc] = NULL;
     cmds = append_buffercmd(cur_cmd, cmds, &cmds_pos, &cmds_bufsize);
     cmds[cmds_pos] = make_cmd(0);
     return cmds;

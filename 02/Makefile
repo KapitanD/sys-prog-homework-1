@@ -5,7 +5,7 @@ CFLAGS	+= -Wundef -Wpointer-arith -Wcast-align -Wshadow
 CFLAGS	+= -Wstrict-overflow=5 -Wwrite-strings -Waggregate-return
 CFLAGS	+= -Wswitch-enum -Wunreachable-code -Winit-self
 CFLAGS	+= -Wno-unused-parameter -pedantic -O3
-LDFLAGS	= -g
+LDFLAGS	=
 
 BASE_SOURCES    = src/main.c src/cmd_parser.c
 SOURCES		= $(BASE_SOURCES)
