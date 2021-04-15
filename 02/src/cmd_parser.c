@@ -76,7 +76,7 @@ char* store_token(const char** tokens, char* token, size_t* pos_token, size_t* p
 const char** get_tokens(FILE* input) {
     int c = EOF;
 
-    size_t token_bufsize = 64, tokens_bufsize = 64, pos_line = 0, pos_token = 0, pos_tokens = 0;
+    size_t token_bufsize = 64, tokens_bufsize = 64, pos_token = 0, pos_tokens = 0;
 
     const char **tokens = malloc(tokens_bufsize * sizeof(char*));
     char *token = malloc(token_bufsize * sizeof(char));
@@ -141,6 +141,8 @@ const char** get_tokens(FILE* input) {
                 token = append_bufferc(c, token, &pos_token, &token_bufsize);
                 is_shielded = 0;
             } else {
+                if (pos_token == 0 && pos_tokens == 0)
+                    token = append_bufferc(c, token, &pos_token, &token_bufsize);
                 break;
             }
         }
@@ -196,8 +198,6 @@ const char** get_tokens(FILE* input) {
             }
             token = append_bufferc(c, token, &pos_token, &token_bufsize);
         }
-
-        pos_line++;
     }
     token = store_token(tokens, token, &pos_token, &pos_tokens, &tokens_bufsize, &tokens_bufsize);
     tokens[pos_tokens] = NULL;
