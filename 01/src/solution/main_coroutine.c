@@ -131,7 +131,7 @@ int main(int argc, char** argv) {
         } else {
             ucontext_coroutines[i].uc_link = &ucontext_main;
         }
-        makecontext(&ucontext_coroutines[i], sort_coroutine, 4, i, input_files[i], vs[i], &coroutine_times[i]);
+        makecontext(&ucontext_coroutines[i], (void (*)(void)) sort_coroutine, 4, i, input_files[i], vs[i], &coroutine_times[i]);
     }
 
     if (swapcontext(&ucontext_main, &ucontext_coroutines[0]) == -1)
