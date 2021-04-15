@@ -3,6 +3,7 @@ FILES_DIR=test/files
 BIN_DIR=bin
 SRC_DIR=src/solution
 MKDIR_P = mkdir -p
+.DEFAULT_GOAL := build
 
 directories: ${BIN_DIR}
 
