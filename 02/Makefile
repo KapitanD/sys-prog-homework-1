@@ -31,7 +31,7 @@ $(EXECUTABLE_DEBUG): $(OBJS)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 test: build
-	python checker.py -e ./$(EXECUTABLE)
+	python3 test/checker.py -e ./$(EXECUTABLE) --max $(max)
 
 clean:
 	rm -rf $(EXECUTABLE) $(OBJS)
