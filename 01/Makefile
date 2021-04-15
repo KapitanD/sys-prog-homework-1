@@ -2,8 +2,14 @@ TESTS_DIR=test
 FILES_DIR=test/files
 BIN_DIR=bin
 SRC_DIR=src/solution
+MKDIR_P = mkdir -p
 
-build: ${SRC_DIR}/main_coroutine.c ${SRC_DIR}/vector.c
+directories: ${BIN_DIR}
+
+${BIN_DIR}:
+	${MKDIR_P} ${BIN_DIR}
+
+build: directories ${SRC_DIR}/main_coroutine.c ${SRC_DIR}/vector.c
 	gcc ${SRC_DIR}/main_coroutine.c ${SRC_DIR}/vector.c -o ${BIN_DIR}/sort
 
 run: build
