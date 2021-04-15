@@ -7,15 +7,22 @@ CFLAGS	+= -Wswitch-enum -Wunreachable-code -Winit-self
 CFLAGS	+= -Wno-unused-parameter -pedantic -O3
 LDFLAGS	=
 
+MKDIR_P = mkdir -p
 BASE_SOURCES    = src/main.c src/cmd_parser.c
 SOURCES		= $(BASE_SOURCES)
 OBJS		= $(SOURCES:.c=.o)
 EXECUTABLE	= bin/shell
 EXECUTABLE_DEBUG = bin/shell_debug
+BIN_DIR = bin
 
 all: test
 
-build: $(EXECUTABLE)
+directories: ${BIN_DIR}
+
+${BIN_DIR}:
+	${MKDIR_P} ${BIN_DIR}
+
+build: directories $(EXECUTABLE) 
 build_debug: $(EXECUTABLE_DEBUG)
 
 debug: build_debug
