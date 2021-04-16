@@ -74,7 +74,7 @@ char* store_token(const char** tokens, char* token, size_t* pos_token, size_t* p
 }
 
 const char** get_tokens(FILE* input) {
-    int c = EOF;
+    int c = 0;
 
     size_t token_bufsize = 64, tokens_bufsize = 64, pos_token = 0, pos_tokens = 0;
 
@@ -88,14 +88,13 @@ const char** get_tokens(FILE* input) {
         exit(1);
     }
 
-    while(c) {
+    while(c != EOF) {
         c = fgetc(input);
 
-        if (c == EOF) {
+    switch (c) {
+        case EOF:
             break;
-        }
-
-        else if (c == '"') {
+        case '"':
             if (is_shielded || is_single_quotted) {
                 is_shielded = 0;
                 token = append_bufferc(c, token, &pos_token, &token_bufsize);
@@ -104,9 +103,8 @@ const char** get_tokens(FILE* input) {
             } else {
                 is_double_qoutted = 0;
             }
-        }
-
-        else if (c == '\'') {
+            break;
+        case '\'':
             if (is_double_qoutted) {
                token = append_bufferc(c, token, &pos_token, &token_bufsize);
             } else if (!is_single_quotted) {
@@ -114,45 +112,43 @@ const char** get_tokens(FILE* input) {
             } else {
                 is_single_quotted = 0;
             }
-        }
-
-        else if (c == '\\') {
+            break;
+        case '\\':
             if (is_shielded || is_single_quotted) {
                 is_shielded = 0;
                 token = append_bufferc(c, token, &pos_token, &token_bufsize);
             } else {
                 is_shielded = 1;
             }
-        }
-
-        else if (c == ' ' || c == '\t') {
+            break;
+        case ' ':
+        case '\t':
             if (is_single_quotted || is_double_qoutted || is_shielded) {
                 token = append_bufferc(c, token, &pos_token, &token_bufsize);
                 is_shielded = 0;
             } else {
                 token = store_token(tokens, token, &pos_token, &pos_tokens, &tokens_bufsize, &tokens_bufsize);
             }
-        }
-
-        else if (c == '\n') {
+            break;
+        case '\n':
             if (is_shielded) {
                 is_shielded = 0;
             } else if (is_single_quotted || is_double_qoutted) {
                 token = append_bufferc(c, token, &pos_token, &token_bufsize);
-                is_shielded = 0;
             } else {
                 if (pos_token == 0 && pos_tokens == 0)
                     token = append_bufferc(c, token, &pos_token, &token_bufsize);
-                break;
+                c = EOF;
             }
-        }
-
-        else if(c == '|') {
+            break;
+        case '>':
+        case '|':
+        case '&':
             if (is_single_quotted || is_double_qoutted || is_shielded) {
                 is_shielded = 0;
                 token = append_bufferc(c, token, &pos_token, &token_bufsize);
             } else {
-                if (token[pos_token - 1] == '|') {
+                if (token[pos_token - 1] == c) {
                     token = append_bufferc(c, token, &pos_token, &token_bufsize);
                     token = store_token(tokens, token, &pos_token, &pos_tokens, &tokens_bufsize, &token_bufsize);
                 } else {
@@ -160,39 +156,8 @@ const char** get_tokens(FILE* input) {
                     token = append_bufferc(c, token, &pos_token, &token_bufsize);
                 }
             }
-        }
-
-        else if(c == '>') {
-            if (is_single_quotted || is_double_qoutted || is_shielded) {
-                is_shielded = 0;
-                token = append_bufferc(c, token, &pos_token, &token_bufsize);
-            } else {
-                if (token[pos_token - 1] == '>') {
-                    token = append_bufferc(c, token, &pos_token, &token_bufsize);
-                    token = store_token(tokens, token, &pos_token, &pos_tokens, &tokens_bufsize, &token_bufsize);
-                } else {
-                    token = store_token(tokens, token, &pos_token, &pos_tokens, &tokens_bufsize, &token_bufsize);
-                    token = append_bufferc(c, token, &pos_token, &token_bufsize);
-                }
-            }
-        }
-
-        else if(c == '&') {
-            if (is_single_quotted || is_double_qoutted || is_shielded) {
-                is_shielded = 0;
-                token = append_bufferc(c, token, &pos_token, &token_bufsize);
-            } else {
-                if (token[pos_token - 1] == '&') {
-                    token = append_bufferc(c, token, &pos_token, &token_bufsize);
-                    token = store_token(tokens, token, &pos_token, &pos_tokens, &tokens_bufsize, &token_bufsize);
-                } else {
-                    token = store_token(tokens, token, &pos_token, &pos_tokens, &tokens_bufsize, &token_bufsize);
-                    token = append_bufferc(c, token, &pos_token, &token_bufsize);
-                }
-            }
-        }
-
-        else {
+            break;
+        default:
             if (token[pos_token - 1] == '>' || token[pos_token - 1] == '|' || token[pos_token - 1] == '&') {
                 token = store_token(tokens, token, &pos_token, &pos_tokens, &tokens_bufsize, &token_bufsize);
             }
