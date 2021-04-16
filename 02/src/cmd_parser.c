@@ -4,13 +4,23 @@
 #include <string.h>
 #include "cmd.h"
 
+
+/**
+ * @brief Make new cmd with proper size of argv
+ * @param size Size of argv of new cmd
+ */
 cmd* make_cmd(size_t size) {
     cmd* tmp = malloc(sizeof(cmd));
     tmp -> argv = malloc(size * sizeof(char*));
     return tmp;
 }
 
-cmd* make_empty_arg_cmd(const char* name) {
+
+/**
+ * @brief Make new cmd with only one arg - it's name
+ * @param name Name of new cmd
+ */
+cmd* make_single_arg_cmd(const char* name) {
     cmd* tmp = malloc(sizeof(cmd));
     tmp -> name = name;
     tmp -> argv = malloc(sizeof(cmd));
@@ -19,6 +29,26 @@ cmd* make_empty_arg_cmd(const char* name) {
     return tmp;
 }
 
+
+/**
+ * @brief Modify cmd to prepare it to store
+ * @param cur_cmd Cmd to modify
+ * @param cmd_argc Var with current argc for cmd
+ */
+void finalize_cmd(cmd* cur_cmd, int* cmd_argc) {
+    cur_cmd -> argc = *(cmd_argc);
+    cur_cmd -> argv[*(cmd_argc)] = NULL;
+    cur_cmd -> name = cur_cmd -> argv[0];
+    *(cmd_argc) = 0;
+}
+
+
+/**
+ * @brief Double buffer size with realloc, modify bufsize var
+ * @param bufsize Size of the expanded buffer, doubles in this func
+ * @param buffer Pointer to buffer to expand
+ * @param type_size Size of the data type stored in the buffer
+ */
 void* expand_buffer(size_t* bufsize, void* buffer, size_t type_size) {
     *(bufsize) += *(bufsize);
     buffer = realloc(buffer, *(bufsize) * type_size);
@@ -29,6 +59,14 @@ void* expand_buffer(size_t* bufsize, void* buffer, size_t type_size) {
     return buffer;
 }
 
+
+/**
+ * @brief Append element to end of buffer for char
+ * @param c Char to append
+ * @param buffer The pointer to buffer to add the item to. Change
+ * @param pos The pointer to index of next to last elem of buffer. Change
+ * @param bufsize The pointer to size of the buffer. May change
+ */
 void* append_bufferc(char c, char* buffer, size_t* pos, size_t* bufsize) {
     buffer[*(pos)] = c;
     *(pos) += 1;
@@ -38,6 +76,14 @@ void* append_bufferc(char c, char* buffer, size_t* pos, size_t* bufsize) {
     return buffer;
 }
 
+
+/**
+ * @brief Append element to end of buffer for cmd
+ * @param c Char to append
+ * @param buffer The pointer to buffer to add the item to. Change
+ * @param pos The pointer to index of next to last elem of buffer. Change
+ * @param bufsize The pointer to size of the buffer. May change
+ */
 void* append_buffercmd(cmd* c, cmd** buffer, size_t* pos, size_t* bufsize) {
     buffer[*(pos)] = c;
     *(pos) += 1;
@@ -47,6 +93,10 @@ void* append_buffercmd(cmd* c, cmd** buffer, size_t* pos, size_t* bufsize) {
     return buffer;
 }
 
+/**
+ * @brief Counts the number of tokens in the array
+ * @param tokens Array of tokens, ending up with NULL
+ */
 size_t count_tokens(const char** tokens) {
     size_t i = 0;
     while (1) {
@@ -58,6 +108,15 @@ size_t count_tokens(const char** tokens) {
     return i;
 }
 
+/**
+ * @brief Stores token in buffer of tokens
+ * @param tokens Buffer to store cur token
+ * @param token Current token
+ * @param pos_token Pointer to next to last index in token
+ * @param pos_tokens Pointer to next to last index in buffer
+ * @param tokens_bufsize Pointer to size of buffer
+ * @param token_bufsize Pointer to size of token buffer
+ */
 char* store_token(const char** tokens, char* token, size_t* pos_token, 
                     size_t* pos_tokens, size_t* tokens_bufsize, 
                     size_t* token_bufsize) {
@@ -75,6 +134,10 @@ char* store_token(const char** tokens, char* token, size_t* pos_token,
     return token;
 }
 
+/**
+ * @brief Get tokens from input file
+ * @param input File to get tokens from
+ */
 const char** get_tokens(FILE* input) {
     int c = 0;
 
@@ -181,6 +244,10 @@ const char** get_tokens(FILE* input) {
     return tokens;
 }
 
+/**
+ * @brief Get tokens from input and conver it into commands array
+ * @param input Input file to get tokens from
+ */
 cmd** read_command(FILE* input) {
     const char** tokens = get_tokens(input);
 
@@ -197,12 +264,11 @@ cmd** read_command(FILE* input) {
                         || (strcmp(token, "&&") == 0) 
                         || (strcmp(token, "||") == 0);
         if (pred) {
-            cur_cmd -> argc = cmd_argc;
-            cur_cmd -> argv[cmd_argc] = NULL;
-            cmd_argc = 0;
-            cur_cmd -> name = cur_cmd -> argv[0];
+            finalize_cmd(cur_cmd, &cmd_argc);
+            
             cmds = append_buffercmd(cur_cmd, cmds, &cmds_pos, &cmds_bufsize);
-            cur_cmd = make_empty_arg_cmd(token);
+            cur_cmd = make_single_arg_cmd(token);
+
             cmds = append_buffercmd(cur_cmd, cmds, &cmds_pos, &cmds_bufsize);
             cur_cmd = make_cmd(tokens_size);
         } else {
@@ -211,10 +277,10 @@ cmd** read_command(FILE* input) {
         }
         i++;
     }
-    cur_cmd -> argc = cmd_argc;
-    cur_cmd -> name = cur_cmd -> argv[0];
-    cur_cmd -> argv[cmd_argc] = NULL;
+    finalize_cmd(cur_cmd, &cmd_argc);
+
     cmds = append_buffercmd(cur_cmd, cmds, &cmds_pos, &cmds_bufsize);
     cmds[cmds_pos] = make_cmd(0);
+
     return cmds;
 }
