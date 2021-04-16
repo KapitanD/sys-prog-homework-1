@@ -35,7 +35,7 @@ cmd* make_single_arg_cmd(const char* name) {
  * @param cur_cmd Cmd to modify
  * @param cmd_argc Var with current argc for cmd
  */
-void finalize_cmd(cmd* cur_cmd, int* cmd_argc) {
+void finalize_cmd(cmd* cur_cmd, size_t* cmd_argc) {
     cur_cmd -> argc = *(cmd_argc);
     cur_cmd -> argv[*(cmd_argc)] = NULL;
     cur_cmd -> name = cur_cmd -> argv[0];
@@ -280,7 +280,7 @@ cmd** read_command(FILE* input) {
     finalize_cmd(cur_cmd, &cmd_argc);
 
     cmds = append_buffercmd(cur_cmd, cmds, &cmds_pos, &cmds_bufsize);
-    cmds[cmds_pos] = make_cmd(0);
+    cmds[cmds_pos] = NULL;
 
     return cmds;
 }

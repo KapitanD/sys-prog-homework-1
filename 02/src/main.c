@@ -6,22 +6,24 @@
 #include <stdlib.h>
 #include <string.h>
 
+/**
+ * @brief Count numer of commands in array, ending with NULL
+ * @param cmds Array of commands, ending with NULL
+ */
 size_t count_cmds(cmd** cmds) {
     size_t i = 0;
     while(1) {
-        if (cmds[i] -> argc == 0) {
+        if (cmds[i] == NULL) {
             return i;
         }
         i++;
     }
-    // never reach that point
-    return i;
 }
 
 size_t count_pipes(cmd** cmds) {
     size_t i = 0, count = 0;
     while(1) {
-        if (cmds[i] -> argc == 0) {
+        if (cmds[i] == NULL) {
             return count;
         }
         if (strcmp(cmds[i] -> name, "|") == 0) {
@@ -32,6 +34,7 @@ size_t count_pipes(cmd** cmds) {
 }
 
 int main(int argc, char** argv) {
+    int w_stat, prev_w_stat;
     while(1) {
         // printf("> ");
         cmd** cmds = read_command(stdin);
@@ -53,10 +56,11 @@ int main(int argc, char** argv) {
                 exit(1);
             }
         }
-        int w_stat = -1;
+        w_stat = -1;
+        prev_w_stat = -1;
         while(1) {
             int child_input = 0, child_output = 1;
-            if (cmds[i] -> argc == 0) {
+            if (cmds[i] == NULL) {
                 break;
             }
             if (strcmp(cmds[i] -> name, "|") == 0 
@@ -155,13 +159,14 @@ int main(int argc, char** argv) {
                                     (char* const*) cmds[i] -> argv);
                 } else {
                     // Parent process
-                    if (w_stat == 0) {
+                    if (prev_w_stat == 0) {
                         i += 2;
                         continue;
                     }
                     wait(&w_stat);
                     if (w_stat != 0) {
                         i += 3;
+                        prev_w_stat = w_stat;
                         continue;
                     }
                 }
@@ -175,13 +180,14 @@ int main(int argc, char** argv) {
                                     (char* const*) cmds[i] -> argv);
                 } else {
                     // Parent process
-                    if (w_stat > 0) {
+                    if (prev_w_stat > 0) {
                         i += 2;
                         continue;
                     }
                     wait(&w_stat);
                     if (w_stat == 0) {
-                        i += 2;
+                        i += 3;
+                        prev_w_stat = w_stat;
                         continue;
                     }
                 }
@@ -216,7 +222,7 @@ int main(int argc, char** argv) {
                         close(child_input);
                     if (child_output != 1)
                         close(child_output);
-                    wait(NULL);
+                    while(wait(&w_stat) >=0);
                 }
             }
             i++;
