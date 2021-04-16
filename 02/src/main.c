@@ -59,7 +59,11 @@ int main(int argc, char** argv) {
             if (cmds[i] -> argc == 0) {
                 break;
             }
-            if (strcmp(cmds[i] -> name, "|") == 0 || strcmp(cmds[i] -> name, ">") == 0 || strcmp(cmds[i] -> name, ">>") == 0 || strcmp(cmds[i] -> name, "&&") == 0 || strcmp(cmds[i] -> name, "||") == 0 ) {
+            if (strcmp(cmds[i] -> name, "|") == 0 
+                || strcmp(cmds[i] -> name, ">") == 0 
+                || strcmp(cmds[i] -> name, ">>") == 0 
+                || strcmp(cmds[i] -> name, "&&") == 0 
+                || strcmp(cmds[i] -> name, "||") == 0 ) {
                 i++;
                 continue;
             }
@@ -79,8 +83,10 @@ int main(int argc, char** argv) {
                 }
                 i++;
                 continue;
-            } else if(i + 2 < cmds_count && strcmp(cmds[i + 1] -> name, ">") == 0) {
-                int outfd = open(cmds[i + 2] -> name, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
+            } else if (i + 2 < cmds_count 
+                        && strcmp(cmds[i + 1] -> name, ">") == 0) {
+                int outfd = open(cmds[i + 2] -> name, O_WRONLY | O_CREAT 
+                                            | O_TRUNC, S_IRUSR | S_IWUSR);
                 if (fork() == 0) {
                     // Child process
                     close(1);
@@ -98,7 +104,8 @@ int main(int argc, char** argv) {
                     for (size_t j = 0; j < pipes_count * 2; ++j) {
                         close(pipefds[j]);
                     }
-                    return execvp(cmds[i] -> name, (char* const*) cmds[i] -> argv);
+                    return execvp(cmds[i] -> name, 
+                                    (char* const*) cmds[i] -> argv);
                 } else {
                     // Parent process
                     close(outfd);
@@ -108,8 +115,10 @@ int main(int argc, char** argv) {
                 }
                 i += 2;
                 continue;
-            } else if(i + 2 < cmds_count && strcmp(cmds[i + 1] -> name, ">>") == 0) {
-                int outfd = open(cmds[i + 2] -> name, O_WRONLY | O_APPEND | O_CREAT, S_IRUSR | S_IWUSR);
+            } else if(i + 2 < cmds_count 
+                        && strcmp(cmds[i + 1] -> name, ">>") == 0) {
+                int outfd = open(cmds[i + 2] -> name, O_WRONLY | O_APPEND 
+                                            | O_CREAT, S_IRUSR | S_IWUSR);
                 if (fork() == 0) {
                     // Child process
                     close(1);
@@ -127,7 +136,8 @@ int main(int argc, char** argv) {
                     for (size_t j = 0; j < pipes_count * 2; ++j) {
                         close(pipefds[j]);
                     }
-                    return execvp(cmds[i] -> name, (char* const*) cmds[i] -> argv);
+                    return execvp(cmds[i] -> name, 
+                                    (char* const*) cmds[i] -> argv);
                 } else {
                     // Parent process
                     close(outfd);
@@ -137,10 +147,12 @@ int main(int argc, char** argv) {
                 }
                 i += 3;
                 continue;
-            } else if(i + 1 < cmds_count && strcmp(cmds[i + 1] -> name, "&&") == 0) {
+            } else if(i + 1 < cmds_count 
+                        && strcmp(cmds[i + 1] -> name, "&&") == 0) {
                 if (fork() == 0) {
                     // Child process
-                    return execvp(cmds[i] -> name, (char* const*) cmds[i] -> argv);
+                    return execvp(cmds[i] -> name, 
+                                    (char* const*) cmds[i] -> argv);
                 } else {
                     // Parent process
                     if (w_stat == 0) {
@@ -155,10 +167,12 @@ int main(int argc, char** argv) {
                 }
                 i++;
                 continue;
-            } else if(i + 1 < cmds_count && strcmp(cmds[i + 1] -> name, "||") == 0) {
+            } else if(i + 1 < cmds_count 
+                        && strcmp(cmds[i + 1] -> name, "||") == 0) {
                 if (fork() == 0) {
                     // Child process
-                    return execvp(cmds[i] -> name, (char* const*) cmds[i] -> argv);
+                    return execvp(cmds[i] -> name, 
+                                    (char* const*) cmds[i] -> argv);
                 } else {
                     // Parent process
                     if (w_stat > 0) {
@@ -193,7 +207,8 @@ int main(int argc, char** argv) {
                     for (size_t j = 0; j < pipes_count * 2; ++j) {
                         close(pipefds[j]);
                     }
-                    return execvp(cmds[i] -> name, (char* const*) cmds[i] -> argv);
+                    return execvp(cmds[i] -> name,
+                                    (char* const*) cmds[i] -> argv);
                     
                 } else {
                     // Parent process
@@ -205,11 +220,9 @@ int main(int argc, char** argv) {
                 }
             }
             i++;
-            
         }
         for (size_t j = 0; j < pipes_count * 2; ++j) {
             close(pipefds[j]);
         }
-         
     }
 }

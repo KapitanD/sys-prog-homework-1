@@ -58,7 +58,9 @@ size_t count_tokens(const char** tokens) {
     return i;
 }
 
-char* store_token(const char** tokens, char* token, size_t* pos_token, size_t* pos_tokens, size_t* tokens_bufsize, size_t* token_bufsize) {
+char* store_token(const char** tokens, char* token, size_t* pos_token, 
+                    size_t* pos_tokens, size_t* tokens_bufsize, 
+                    size_t* token_bufsize) {
     if (*(pos_token) != 0) {
         token = append_bufferc('\0', token, pos_token, token_bufsize);
         tokens[*(pos_tokens)] = token;
@@ -76,7 +78,8 @@ char* store_token(const char** tokens, char* token, size_t* pos_token, size_t* p
 const char** get_tokens(FILE* input) {
     int c = 0;
 
-    size_t token_bufsize = 64, tokens_bufsize = 64, pos_token = 0, pos_tokens = 0;
+    size_t token_bufsize = 64, 
+            tokens_bufsize = 64, pos_token = 0, pos_tokens = 0;
 
     const char **tokens = malloc(tokens_bufsize * sizeof(char*));
     char *token = malloc(token_bufsize * sizeof(char));
@@ -106,7 +109,7 @@ const char** get_tokens(FILE* input) {
             break;
         case '\'':
             if (is_double_qoutted) {
-               token = append_bufferc(c, token, &pos_token, &token_bufsize);
+                token = append_bufferc(c, token, &pos_token, &token_bufsize);
             } else if (!is_single_quotted) {
                 is_single_quotted = 1;
             } else {
@@ -127,7 +130,8 @@ const char** get_tokens(FILE* input) {
                 token = append_bufferc(c, token, &pos_token, &token_bufsize);
                 is_shielded = 0;
             } else {
-                token = store_token(tokens, token, &pos_token, &pos_tokens, &tokens_bufsize, &tokens_bufsize);
+                token = store_token(tokens, token, &pos_token, &pos_tokens,
+                                            &tokens_bufsize, &tokens_bufsize);
             }
             break;
         case '\n':
@@ -137,7 +141,8 @@ const char** get_tokens(FILE* input) {
                 token = append_bufferc(c, token, &pos_token, &token_bufsize);
             } else {
                 if (pos_token == 0 && pos_tokens == 0)
-                    token = append_bufferc(c, token, &pos_token, &token_bufsize);
+                    token = append_bufferc(c, token, &pos_token, 
+                                            &token_bufsize);
                 c = EOF;
             }
             break;
@@ -149,36 +154,48 @@ const char** get_tokens(FILE* input) {
                 token = append_bufferc(c, token, &pos_token, &token_bufsize);
             } else {
                 if (token[pos_token - 1] == c) {
-                    token = append_bufferc(c, token, &pos_token, &token_bufsize);
-                    token = store_token(tokens, token, &pos_token, &pos_tokens, &tokens_bufsize, &token_bufsize);
+                    token = append_bufferc(c, token, &pos_token,
+                                            &token_bufsize);
+                    token = store_token(tokens, token, &pos_token, &pos_tokens,
+                                            &tokens_bufsize, &token_bufsize);
                 } else {
-                    token = store_token(tokens, token, &pos_token, &pos_tokens, &tokens_bufsize, &token_bufsize);
-                    token = append_bufferc(c, token, &pos_token, &token_bufsize);
+                    token = store_token(tokens, token, &pos_token, &pos_tokens,
+                                            &tokens_bufsize, &token_bufsize);
+                    token = append_bufferc(c, token, &pos_token, 
+                                            &token_bufsize);
                 }
             }
             break;
         default:
-            if (token[pos_token - 1] == '>' || token[pos_token - 1] == '|' || token[pos_token - 1] == '&') {
-                token = store_token(tokens, token, &pos_token, &pos_tokens, &tokens_bufsize, &token_bufsize);
+            if (token[pos_token - 1] == '>' || token[pos_token - 1] == '|' 
+                                            || token[pos_token - 1] == '&') {
+                token = store_token(tokens, token, &pos_token, &pos_tokens,
+                                            &tokens_bufsize, &token_bufsize);
             }
             token = append_bufferc(c, token, &pos_token, &token_bufsize);
         }
     }
-    token = store_token(tokens, token, &pos_token, &pos_tokens, &tokens_bufsize, &tokens_bufsize);
+    token = store_token(tokens, token, &pos_token, &pos_tokens, 
+                                            &tokens_bufsize, &tokens_bufsize);
     tokens[pos_tokens] = NULL;
     return tokens;
 }
 
 cmd** read_command(FILE* input) {
     const char** tokens = get_tokens(input);
-    size_t tokens_size = count_tokens(tokens), cmds_bufsize = 64, cmds_pos = 0, i = 0, cmd_argc = 0;
+
+    size_t tokens_size = count_tokens(tokens),
+            cmds_bufsize = 64, cmds_pos = 0, i = 0, cmd_argc = 0;
 
     cmd** cmds = malloc(cmds_bufsize * sizeof(cmd*));
     cmd* cur_cmd = make_cmd(tokens_size);
 
     while(i < tokens_size) {
         const char* token = tokens[i];
-        int pred = (strcmp(token, "|") == 0) || (strcmp(token, ">>") == 0) || (strcmp(token, ">") == 0) || (strcmp(token, "&&") == 0) || (strcmp(token, "||") == 0);
+        int pred = (strcmp(token, "|") == 0) || (strcmp(token, ">>") == 0) 
+                        || (strcmp(token, ">") == 0) 
+                        || (strcmp(token, "&&") == 0) 
+                        || (strcmp(token, "||") == 0);
         if (pred) {
             cur_cmd -> argc = cmd_argc;
             cur_cmd -> argv[cmd_argc] = NULL;
