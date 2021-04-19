@@ -8,7 +8,7 @@ struct _cmd {
     int argc;
 };
 
-#define cmd struct _cmd
+typedef struct _cmd cmd;
 
 cmd** read_command(FILE* input);
 
