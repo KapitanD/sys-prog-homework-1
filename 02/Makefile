@@ -5,7 +5,8 @@ CFLAGS	+= -Wundef -Wpointer-arith -Wcast-align -Wshadow
 CFLAGS	+= -Wstrict-overflow=5 -Wwrite-strings -Waggregate-return
 CFLAGS	+= -Wswitch-enum -Wunreachable-code -Winit-self
 CFLAGS	+= -Wno-unused-parameter -pedantic -O3
-LDFLAGS	=
+CFLAGS  += -fsanitize=undefined
+LDFLAGS  = -fsanitize=undefined
 
 MKDIR_P = mkdir -p
 BASE_SOURCES    = src/main.c src/cmd_parser.c
@@ -15,6 +16,8 @@ EXECUTABLE	= bin/shell
 EXECUTABLE_DEBUG = bin/shell_debug
 BIN_DIR = bin
 
+max ?= 20
+
 all: test
 
 directories: ${BIN_DIR}
@@ -22,8 +25,10 @@ directories: ${BIN_DIR}
 ${BIN_DIR}:
 	${MKDIR_P} ${BIN_DIR}
 
-build: directories $(EXECUTABLE) 
-build_debug: $(EXECUTABLE_DEBUG)
+build: directories $(EXECUTABLE)
+build_debug: CFLAGS += -DDEBUG -g
+build_debug: LDFLAGS += -DDEBUG -g
+build_debug: directories $(EXECUTABLE_DEBUG)
 
 debug: build_debug
 	gdb $(EXECUTABLE_DEBUG)
@@ -32,7 +37,7 @@ $(EXECUTABLE): $(OBJS)
 	$(CC) $(LDFLAGS) $(OBJS) -o $@
 
 $(EXECUTABLE_DEBUG): $(OBJS)
-	$(CC) $(LDFLAGS) $(OBJS) -o $@
+	$(CC) -g $(LDFLAGS) $(OBJS) -o $@
 
 .c.o:
 	$(CC) $(CFLAGS) -c $< -o $@

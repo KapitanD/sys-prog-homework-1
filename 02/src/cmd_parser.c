@@ -1,8 +1,9 @@
+#include "cmd.h"
+
 #include <stdio.h>
 #include <strings.h>
 #include <stdlib.h>
 #include <string.h>
-#include "cmd.h"
 
 
 /**
@@ -67,7 +68,7 @@ void* expand_buffer(size_t* bufsize, void* buffer, size_t type_size) {
  * @param pos The pointer to index of next to last elem of buffer. Change
  * @param bufsize The pointer to size of the buffer. May change
  */
-void* append_bufferc(char c, char* buffer, size_t* pos, size_t* bufsize) {
+void* append_buffer_ch(char c, char* buffer, size_t* pos, size_t* bufsize) {
     buffer[*(pos)] = c;
     *(pos) += 1;
     if (*(pos) >= *(bufsize)) {
@@ -84,7 +85,7 @@ void* append_bufferc(char c, char* buffer, size_t* pos, size_t* bufsize) {
  * @param pos The pointer to index of next to last elem of buffer. Change
  * @param bufsize The pointer to size of the buffer. May change
  */
-void* append_buffercmd(cmd* c, cmd** buffer, size_t* pos, size_t* bufsize) {
+void* append_buffer_cmd(cmd* c, cmd** buffer, size_t* pos, size_t* bufsize) {
     buffer[*(pos)] = c;
     *(pos) += 1;
     if (*(pos) >= *(bufsize)) {
@@ -121,7 +122,7 @@ char* store_token(const char** tokens, char* token, size_t* pos_token,
                     size_t* pos_tokens, size_t* tokens_bufsize, 
                     size_t* token_bufsize) {
     if (*(pos_token) != 0) {
-        token = append_bufferc('\0', token, pos_token, token_bufsize);
+        token = append_buffer_ch('\0', token, pos_token, token_bufsize);
         tokens[*(pos_tokens)] = token;
         token = malloc(*(token_bufsize) * sizeof(char));
         *(pos_token) = 0;
@@ -147,7 +148,7 @@ const char** get_tokens(FILE* input) {
     const char **tokens = malloc(tokens_bufsize * sizeof(char*));
     char *token = malloc(token_bufsize * sizeof(char));
 
-    int is_single_quotted = 0, is_double_qoutted = 0, is_shielded = 0;
+    int is_single_quotted = 0, is_double_quoted = 0, is_shielded = 0;
 
     if (!tokens) {
         perror("allocation error");
@@ -159,20 +160,22 @@ const char** get_tokens(FILE* input) {
 
     switch (c) {
         case EOF:
+            if (pos_token == 0)
+                return NULL;
             break;
         case '"':
             if (is_shielded || is_single_quotted) {
                 is_shielded = 0;
-                token = append_bufferc(c, token, &pos_token, &token_bufsize);
-            } else if (!is_double_qoutted) {
-                is_double_qoutted = 1;
+                token = append_buffer_ch(c, token, &pos_token, &token_bufsize);
+            } else if (!is_double_quoted) {
+                is_double_quoted = 1;
             } else {
-                is_double_qoutted = 0;
+                is_double_quoted = 0;
             }
             break;
         case '\'':
-            if (is_double_qoutted) {
-                token = append_bufferc(c, token, &pos_token, &token_bufsize);
+            if (is_double_quoted) {
+                token = append_buffer_ch(c, token, &pos_token, &token_bufsize);
             } else if (!is_single_quotted) {
                 is_single_quotted = 1;
             } else {
@@ -182,15 +185,15 @@ const char** get_tokens(FILE* input) {
         case '\\':
             if (is_shielded || is_single_quotted) {
                 is_shielded = 0;
-                token = append_bufferc(c, token, &pos_token, &token_bufsize);
+                token = append_buffer_ch(c, token, &pos_token, &token_bufsize);
             } else {
                 is_shielded = 1;
             }
             break;
         case ' ':
         case '\t':
-            if (is_single_quotted || is_double_qoutted || is_shielded) {
-                token = append_bufferc(c, token, &pos_token, &token_bufsize);
+            if (is_single_quotted || is_double_quoted || is_shielded) {
+                token = append_buffer_ch(c, token, &pos_token, &token_bufsize);
                 is_shielded = 0;
             } else {
                 token = store_token(tokens, token, &pos_token, &pos_tokens,
@@ -200,11 +203,11 @@ const char** get_tokens(FILE* input) {
         case '\n':
             if (is_shielded) {
                 is_shielded = 0;
-            } else if (is_single_quotted || is_double_qoutted) {
-                token = append_bufferc(c, token, &pos_token, &token_bufsize);
+            } else if (is_single_quotted || is_double_quoted) {
+                token = append_buffer_ch(c, token, &pos_token, &token_bufsize);
             } else {
                 if (pos_token == 0 && pos_tokens == 0)
-                    token = append_bufferc(c, token, &pos_token, 
+                    token = append_buffer_ch(c, token, &pos_token, 
                                             &token_bufsize);
                 c = EOF;
             }
@@ -212,19 +215,19 @@ const char** get_tokens(FILE* input) {
         case '>':
         case '|':
         case '&':
-            if (is_single_quotted || is_double_qoutted || is_shielded) {
+            if (is_single_quotted || is_double_quoted || is_shielded) {
                 is_shielded = 0;
-                token = append_bufferc(c, token, &pos_token, &token_bufsize);
+                token = append_buffer_ch(c, token, &pos_token, &token_bufsize);
             } else {
                 if (token[pos_token - 1] == c) {
-                    token = append_bufferc(c, token, &pos_token,
+                    token = append_buffer_ch(c, token, &pos_token,
                                             &token_bufsize);
                     token = store_token(tokens, token, &pos_token, &pos_tokens,
                                             &tokens_bufsize, &token_bufsize);
                 } else {
                     token = store_token(tokens, token, &pos_token, &pos_tokens,
                                             &tokens_bufsize, &token_bufsize);
-                    token = append_bufferc(c, token, &pos_token, 
+                    token = append_buffer_ch(c, token, &pos_token, 
                                             &token_bufsize);
                 }
             }
@@ -235,7 +238,7 @@ const char** get_tokens(FILE* input) {
                 token = store_token(tokens, token, &pos_token, &pos_tokens,
                                             &tokens_bufsize, &token_bufsize);
             }
-            token = append_bufferc(c, token, &pos_token, &token_bufsize);
+            token = append_buffer_ch(c, token, &pos_token, &token_bufsize);
         }
     }
     token = store_token(tokens, token, &pos_token, &pos_tokens, 
@@ -250,6 +253,8 @@ const char** get_tokens(FILE* input) {
  */
 cmd** read_command(FILE* input) {
     const char** tokens = get_tokens(input);
+    if (tokens == NULL)
+        return NULL;
 
     size_t tokens_size = count_tokens(tokens),
             cmds_bufsize = 64, cmds_pos = 0, i = 0, cmd_argc = 0;
@@ -266,10 +271,10 @@ cmd** read_command(FILE* input) {
         if (pred) {
             finalize_cmd(cur_cmd, &cmd_argc);
             
-            cmds = append_buffercmd(cur_cmd, cmds, &cmds_pos, &cmds_bufsize);
+            cmds = append_buffer_cmd(cur_cmd, cmds, &cmds_pos, &cmds_bufsize);
             cur_cmd = make_single_arg_cmd(token);
 
-            cmds = append_buffercmd(cur_cmd, cmds, &cmds_pos, &cmds_bufsize);
+            cmds = append_buffer_cmd(cur_cmd, cmds, &cmds_pos, &cmds_bufsize);
             cur_cmd = make_cmd(tokens_size);
         } else {
             cur_cmd -> argv[cmd_argc] = token;
@@ -279,7 +284,7 @@ cmd** read_command(FILE* input) {
     }
     finalize_cmd(cur_cmd, &cmd_argc);
 
-    cmds = append_buffercmd(cur_cmd, cmds, &cmds_pos, &cmds_bufsize);
+    cmds = append_buffer_cmd(cur_cmd, cmds, &cmds_pos, &cmds_bufsize);
     cmds[cmds_pos] = NULL;
 
     return cmds;

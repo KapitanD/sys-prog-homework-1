@@ -1,8 +1,10 @@
 #include "cmd.h"
-#include <stdio.h>
+
 #include <fcntl.h>
-#include <sys/wait.h>
 #include <unistd.h>
+#include <sys/wait.h>
+
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -44,6 +46,8 @@ int main(int argc, char** argv) {
     while(1) {
         // Read comand or several comands from stdin
         cmd** cmds = read_command(stdin);
+        if (cmds == NULL)
+            break;
         // i - current command index
         size_t i = 0;
         size_t cmds_count = count_cmds(cmds);
@@ -102,12 +106,12 @@ int main(int argc, char** argv) {
                 continue;
             } else if (i + 2 < cmds_count 
                         && strcmp(cmds[i + 1] -> name, ">") == 0) {
-                int outfd = open(cmds[i + 2] -> name, O_WRONLY | O_CREAT 
+                int out_fd = open(cmds[i + 2] -> name, O_WRONLY | O_CREAT 
                                             | O_TRUNC, S_IRUSR | S_IWUSR);
                 if (fork() == 0) {
                     // Child process
                     close(1);
-                    if (dup2(outfd, 1) < 0) {
+                    if (dup2(out_fd, 1) < 0) {
                         perror("error: couldnt get output");
                         exit(1);
                     }
@@ -125,7 +129,7 @@ int main(int argc, char** argv) {
                                     (char* const*) cmds[i] -> argv);
                 } else {
                     // Parent process
-                    close(outfd);
+                    close(out_fd);
                     if(child_input != 0)
                         close(child_input);
                     wait(NULL);
@@ -134,19 +138,19 @@ int main(int argc, char** argv) {
                 continue;
             } else if(i + 2 < cmds_count 
                         && strcmp(cmds[i + 1] -> name, ">>") == 0) {
-                int outfd = open(cmds[i + 2] -> name, O_WRONLY | O_APPEND 
+                int out_fd = open(cmds[i + 2] -> name, O_WRONLY | O_APPEND 
                                             | O_CREAT, S_IRUSR | S_IWUSR);
                 if (fork() == 0) {
                     // Child process
                     close(1);
-                    if (dup2(outfd, 1) < 0) {
+                    if (dup2(out_fd, 1) < 0) {
                         perror("error: couldnt get output");
                         exit(1);
                     }
                     if(child_input != 0) {
                         close(0);
                         if(dup2(child_input, 0) < 0) {
-                            perror("error: couldnt get iunput");
+                            perror("error: couldnt get input");
                             exit(1);
                         }
                     }
@@ -157,7 +161,7 @@ int main(int argc, char** argv) {
                                     (char* const*) cmds[i] -> argv);
                 } else {
                     // Parent process
-                    close(outfd);
+                    close(out_fd);
                     if(child_input != 0)
                         close(child_input);
                     wait(NULL);
