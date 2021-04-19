@@ -63,6 +63,11 @@ int main(int argc, char** argv) {
         // Count number of pipes and create a pipe for every
         size_t pipes_count = count_pipes(cmds);
         int *pipefds = (int*)malloc(2*pipes_count*sizeof(int));
+        if (pipefds == NULL) {
+            perror("error: cant create pipe");
+            exit(1);
+        }
+
         for (size_t j = 0; j < pipes_count; ++j) {
             if (pipe(pipefds + j * 2) < 0) {
                 perror("error: pipe creation failed");

@@ -12,7 +12,15 @@
  */
 cmd* make_cmd(size_t size) {
     cmd* tmp = malloc(sizeof(cmd));
+    if (tmp == NULL) {
+        perror("error: malloc error - cant make cmd");
+        exit(1);
+    }
     tmp -> argv = malloc(size * sizeof(char*));
+    if (tmp == NULL) {
+        perror("error: malloc error - cant make cmd argv");
+        exit(1);
+    }
     return tmp;
 }
 
@@ -25,6 +33,10 @@ cmd* make_single_arg_cmd(const char* name) {
     cmd* tmp = malloc(sizeof(cmd));
     tmp -> name = name;
     tmp -> argv = malloc(sizeof(cmd));
+    if (tmp -> argv == NULL) {
+        perror("error: malloc error - cant make single command argv");
+        exit(1);
+    }
     tmp -> argv[0] = name;
     tmp -> argc = 1;
     return tmp;
@@ -53,7 +65,7 @@ void finalize_cmd(cmd* cur_cmd, size_t* cmd_argc) {
 void* expand_buffer(size_t* bufsize, void* buffer, size_t type_size) {
     *(bufsize) += *(bufsize);
     buffer = realloc(buffer, *(bufsize) * type_size);
-    if (!buffer) {
+    if (buffer == NULL) {
         perror("buffer realloc error");
         exit(1);
     }
@@ -146,14 +158,17 @@ const char** get_tokens(FILE* input) {
             tokens_bufsize = 64, pos_token = 0, pos_tokens = 0;
 
     const char **tokens = malloc(tokens_bufsize * sizeof(char*));
-    char *token = malloc(token_bufsize * sizeof(char));
-
-    int is_single_quotted = 0, is_double_quoted = 0, is_shielded = 0;
-
-    if (!tokens) {
-        perror("allocation error");
+    if (tokens == NULL) {
+        perror("error: malloc error - cant create tokens");
         exit(1);
     }
+    char *token = malloc(token_bufsize * sizeof(char));
+    if (token == NULL) {
+        perror("error: malloc error - cant create token");
+        exit(1);
+    }
+
+    int is_single_quotted = 0, is_double_quoted = 0, is_shielded = 0;
 
     while(c != EOF) {
         c = fgetc(input);
@@ -260,7 +275,15 @@ cmd** read_command(FILE* input) {
             cmds_bufsize = 64, cmds_pos = 0, i = 0, cmd_argc = 0;
 
     cmd** cmds = malloc(cmds_bufsize * sizeof(cmd*));
+    if (cmds == NULL) {
+        perror("error: malloc error - cant allocate cmds");
+        exit(1);
+    }
     cmd* cur_cmd = make_cmd(tokens_size);
+    if (cur_cmd == NULL) {
+        perror("error: malloc error - cant allocate cur_cmd");
+        exit(1);
+    }
 
     while(i < tokens_size) {
         const char* token = tokens[i];
