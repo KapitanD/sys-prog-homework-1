@@ -7,7 +7,7 @@ struct _VectorInt {
     int* data;
 };
 
-#define VectorInt struct _VectorInt
+typedef struct _VectorInt VectorInt;
 
 VectorInt* VectorInt_make_vector();
 void VectorInt_push_back(VectorInt* v, int a);

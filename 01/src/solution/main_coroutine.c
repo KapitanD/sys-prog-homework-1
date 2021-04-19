@@ -12,7 +12,7 @@ static ucontext_t* ucontext_coroutines;
 static int N_COROUT;
 
 #define handle_error(msg) \
-   do { perror(msg); exit(EXIT_FAILURE); } while (0)
+    do { perror(msg); exit(EXIT_FAILURE); } while (0)
 
 #define stack_size 1024 * 1024 * 1024
 
@@ -72,7 +72,7 @@ sort_coroutine(int id, FILE *input, VectorInt* v, clock_t* coroutine_time) {
         }
         i *= 2;
     }
-    *coroutine_time = clock() - start_time;
+    *coroutine_time = difftime(clock(), start_time);
 }
 
 static void *
@@ -95,10 +95,12 @@ allocate_stack()
 
 int main(int argc, char** argv) {
     clock_t start_time = clock();
+    
     if (argc == 1) {
         printf("No input files provided\n");
         return 1;
     }
+
     if (argc == 2) {
         printf("No output file provided");
         return 2;
@@ -145,10 +147,10 @@ int main(int argc, char** argv) {
         fprintf(output, "%d ", merged_vector -> data[i]);
     }
 
-    printf("Total time: %f\n", ((float) start_time - clock())/CLOCKS_PER_SEC*1000000.);
+    printf("Total time: %f\n", ((double) difftime(clock(), start_time))/CLOCKS_PER_SEC*1000000.);
 
     for (int i = 0; i < N_COROUT; ++i) {
-        printf("Coroutine %d time: %f\n", i, ((float) coroutine_times[i])/CLOCKS_PER_SEC*1000000.);
+        printf("Coroutine %d time: %f, file: %s\n", i, ((double) coroutine_times[i])/CLOCKS_PER_SEC*1000000., argv[i + 1]);
     }
     free(ucontext_coroutines);
     free(coroutine_times);
